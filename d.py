@@ -24,7 +24,7 @@ def info_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game",
+        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -39,11 +39,12 @@ def info_account(token, cookie):
     if response.status_code == 200:
         try:
             data = response.json()
+            print(f"Respons JSON: {data}")
             print(f"Informasi Akun:")
-            print(f"Username: {data['user_nick']}")
-            print(f"Total DRFT Claims: {data['total_drft_claims']}")
-            print(f"Total Daily Claims: {data['total_daily_claims']}")
-            print(f"DRFT: {data['drft']}")
+            print(f"Username: {data.get('user_nick', 'N/A')}")
+            print(f"Total DRFT Claims: {data.get('total_drft_claims', 'N/A')}")
+            print(f"Total Daily Claims: {data.get('total_daily_claims', 'N/A')}")
+            print(f"DRFT: {data.get('drft', 'N/A')}")
         except ValueError:
             print("Respons tidak berisi JSON yang valid.")
     else:
