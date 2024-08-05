@@ -37,12 +37,15 @@ def info_account(token, cookie):
     
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        data = response.json()
-        print(f"Informasi Akun:")
-        print(f"Username: {data['user_nick']}")
-        print(f"Total DRFT Claims: {data['total_drft_claims']}")
-        print(f"Total Daily Claims: {data['total_daily_claims']}")
-        print(f"DRFT: {data['drft']}")
+        try:
+            data = response.json()
+            print(f"Informasi Akun:")
+            print(f"Username: {data['user_nick']}")
+            print(f"Total DRFT Claims: {data['total_drft_claims']}")
+            print(f"Total Daily Claims: {data['total_daily_claims']}")
+            print(f"DRFT: {data['drft']}")
+        except ValueError:
+            print("Respons tidak berisi JSON yang valid.")
     else:
         print(f"Gagal mendapatkan informasi akun. Status kode: {response.status_code}")
 
