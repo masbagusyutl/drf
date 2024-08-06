@@ -1,9 +1,6 @@
 import time
 import requests
-import base64
-import zlib
 from datetime import datetime, timedelta
-import brotli
 import re
 
 # Fungsi untuk membaca data dari file
@@ -28,7 +25,7 @@ def login_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game",
+        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -53,7 +50,7 @@ def info_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game",
+        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -66,23 +63,36 @@ def info_account(token, cookie):
     
     response = requests.get(url, headers=headers)
     response_text = response.text
-    
-    
+    print(f"Respons: {response_text}")
+
     # Cari informasi akun menggunakan regex
     user_nick = re.search(r'"user_nick":"(.*?)"', response_text)
     total_drft_claims = re.search(r'"total_drft_claims":(\d+)', response_text)
     total_daily_claims = re.search(r'"total_daily_claims":(\d+)', response_text)
     drft = re.search(r'"drft":"(.*?)"', response_text)
+    last_claimed_task_id = re.search(r'"last_claimed_task_id":(\d+)', response_text)
+    last_claim_task_time = re.search(r'"last_claim_task_time":"(.*?)"', response_text)
+    last_claim_drft_time = re.search(r'"last_claim_drft_time":"(.*?)"', response_text)
 
     print("Informasi Akun:")
     print(f"Username: {user_nick.group(1) if user_nick else 'N/A'}")
     print(f"Total DRFT Claims: {total_drft_claims.group(1) if total_drft_claims else 'N/A'}")
     print(f"Total Daily Claims: {total_daily_claims.group(1) if total_daily_claims else 'N/A'}")
     print(f"DRFT: {drft.group(1) if drft else 'N/A'}")
+    print(f"Last Claimed Task ID: {last_claimed_task_id.group(1) if last_claimed_task_id else 'N/A'}")
+    print(f"Last Claim Task Time: {last_claim_task_time.group(1) if last_claim_task_time else 'N/A'}")
+    print(f"Last Claim DRFT Time: {last_claim_drft_time.group(1) if last_claim_drft_time else 'N/A'}")
 
-# Fungsi untuk memproses akun
-def process_account(token, cookie):
-    url = "https://drftparty.fibrum.com/set-task?task_id=201"
+    return {
+        "total_daily_claims": int(total_daily_claims.group(1)) if total_daily_claims else 0,
+        "last_claimed_task_id": int(last_claimed_task_id.group(1)) if last_claimed_task_id else 0,
+        "last_claim_task_time": last_claim_task_time.group(1) if last_claim_task_time else None,
+        "last_claim_drft_time": last_claim_drft_time.group(1) if last_claim_drft_time else None
+    }
+
+# Fungsi untuk memproses tugas klaim hadiah harian
+def process_task(token, cookie, task_id):
+    url = f"https://drftparty.fibrum.com/set-task?task_id={task_id}"
     headers = {
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br, zstd",
@@ -123,12 +133,27 @@ def main():
         print(f"Memproses akun ke-{idx+1} dari {total_accounts}")
         login_status = login_account(token, cookie)
         if login_status == 200:
-            info_account(token, cookie)
-            status_code = process_account(token, cookie)
-            print(f"Status kode: {status_code}")
+            account_info = info_account(token, cookie)
+            
+            # Proses cek in harian
+            current_time = datetime.now()
+            if account_info["last_claim_task_time"]:
+                last_claim_task_time = datetime.strptime(account_info["last_claim_task_time"], "%Y-%m-%d %H:%M:%S")
+                if current_time > last_claim_task_time + timedelta(days=1):
+                    print("Memproses cek in harian.")
+                    status_code = process_task(token, cookie, 101)
+                    print(f"Status kode cek in harian: {status_code}")
+                else:
+                    print("Belum waktunya cek in harian.")
+            
+            # Proses ambil hadiah harian
+            print("Memproses ambil hadiah harian.")
+            status_code = process_task(token, cookie, 201)
+            print(f"Status kode ambil hadiah harian: {status_code}")
+            
+            time.sleep(5)
         else:
-            print(f"Gagal login. Status kode: {login_status}")
-        time.sleep(5)
+            print(f"Login gagal. Status kode: {login_status}")
     
     print("Semua akun telah diproses. Memulai hitung mundur 1 hari.")
     countdown_one_day()
