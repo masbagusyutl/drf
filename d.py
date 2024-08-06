@@ -1,6 +1,9 @@
 import time
 import requests
+import base64
+import zlib
 from datetime import datetime, timedelta
+import brotli
 import re
 
 # Fungsi untuk membaca data dari file
@@ -62,23 +65,42 @@ def info_account(token, cookie):
     }
     
     response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        response_text = response.text
-        print(f"Respons: {response_text}")
-        
-        # Cari informasi akun menggunakan regex
-        user_nick = re.search(r'"user_nick":"(.*?)"', response_text)
-        total_drft_claims = re.search(r'"total_drft_claims":(\d+)', response_text)
-        total_daily_claims = re.search(r'"total_daily_claims":(\d+)', response_text)
-        drft = re.search(r'"drft":"(.*?)"', response_text)
+    response_content = response.content
+    
+    # Coba dekompresi menggunakan berbagai metode
+    try:
+        decoded_content = zlib.decompress(response_content, zlib.MAX_WBITS | 16)
+        print(f"Decompressed Gzip: {decoded_content}")
+    except:
+        try:
+            decoded_content = zlib.decompress(response_content)
+            print(f"Decompressed Deflate: {decoded_content}")
+        except:
+            try:
+                decoded_content = brotli.decompress(response_content)
+                print(f"Decompressed Brotli: {decoded_content}")
+            except:
+                try:
+                    decoded_content = base64.b64decode(response_content)
+                    print(f"Decoded Base64: {decoded_content}")
+                except:
+                    decoded_content = response_content
+                    print("Dekode dan dekompresi gagal, menggunakan konten asli.")
+    
+    response_text = decoded_content.decode('utf-8', errors='ignore')
+    print(f"Respons: {response_text}")
+    
+    # Cari informasi akun menggunakan regex
+    user_nick = re.search(r'"user_nick":"(.*?)"', response_text)
+    total_drft_claims = re.search(r'"total_drft_claims":(\d+)', response_text)
+    total_daily_claims = re.search(r'"total_daily_claims":(\d+)', response_text)
+    drft = re.search(r'"drft":"(.*?)"', response_text)
 
-        print("Informasi Akun:")
-        print(f"Username: {user_nick.group(1) if user_nick else 'N/A'}")
-        print(f"Total DRFT Claims: {total_drft_claims.group(1) if total_drft_claims else 'N/A'}")
-        print(f"Total Daily Claims: {total_daily_claims.group(1) if total_daily_claims else 'N/A'}")
-        print(f"DRFT: {drft.group(1) if drft else 'N/A'}")
-    else:
-        print(f"Gagal mendapatkan informasi akun. Status kode: {response.status_code}")
+    print("Informasi Akun:")
+    print(f"Username: {user_nick.group(1) if user_nick else 'N/A'}")
+    print(f"Total DRFT Claims: {total_drft_claims.group(1) if total_drft_claims else 'N/A'}")
+    print(f"Total Daily Claims: {total_daily_claims.group(1) if total_daily_claims else 'N/A'}")
+    print(f"DRFT: {drft.group(1) if drft else 'N/A'}")
 
 # Fungsi untuk memproses akun
 def process_account(token, cookie):
