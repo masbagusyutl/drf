@@ -63,8 +63,7 @@ def info_account(token, cookie):
     
     response = requests.get(url, headers=headers)
     response_text = response.text
-    print(f"Respons: {response_text}")
-
+    
     # Cari informasi akun menggunakan regex
     user_nick = re.search(r'"user_nick":"(.*?)"', response_text)
     total_drft_claims = re.search(r'"total_drft_claims":(\d+)', response_text)
@@ -121,6 +120,16 @@ def process_task(token, cookie, task_id):
     }
     
     response = requests.get(url, headers=headers)
+    response_text = response.text
+    
+
+    # Cari informasi claimedDRFT dari respon
+    claimed_drft = re.search(r'"claimedDRFT":"(\d+)"', response_text)
+    if claimed_drft:
+        print(f"Jumlah DRFT yang didapat: {claimed_drft.group(1)}")
+    else:
+        print("Data claimedDRFT tidak ditemukan.")
+
     return response.status_code
 
 # Fungsi untuk menampilkan hitung mundur satu hari
@@ -148,18 +157,21 @@ def main():
             if account_info["last_claim_task_time"]:
                 next_check_in_time = account_info["last_claim_task_time"] + timedelta(days=1)
                 if current_time > next_check_in_time:
-                    print("Memproses cek in harian.")
-                    status_code = process_task(token, cookie, 101)
-                    print(f"Status kode cek in harian: {status_code}")
+                    print("Memproses tugas cek in harian.")
+                    check_in_task_id = 101 + account_info["total_daily_claims"]
+                    if check_in_task_id > 112:
+                        check_in_task_id = 112  # Maksimal task_id untuk cek in
+                    process_task(token, cookie, check_in_task_id)
                 else:
                     print("Belum waktunya cek in harian.")
+            else:
+                print("Belum ada data cek in sebelumnya.")
             
             # Proses ambil hadiah harian
-            print("Memproses ambil hadiah harian.")
-            status_code = process_task(token, cookie, 201)
-            print(f"Status kode ambil hadiah harian: {status_code}")
+            print("Memproses tugas ambil hadiah harian.")
+            process_task(token, cookie, 201)
             
-            time.sleep(5)
+            time.sleep(5)  # Jeda 5 detik sebelum memproses akun berikutnya
         else:
             print(f"Login gagal. Status kode: {login_status}")
     
