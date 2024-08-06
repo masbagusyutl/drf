@@ -63,7 +63,7 @@ def info_account(token, cookie):
     
     response = requests.get(url, headers=headers)
     response_text = response.text
-    
+
     # Cari informasi akun menggunakan regex
     user_nick = re.search(r'"user_nick":"(.*?)"', response_text)
     total_drft_claims = re.search(r'"total_drft_claims":(\d+)', response_text)
@@ -97,7 +97,7 @@ def info_account(token, cookie):
         "last_claim_drft_time": last_claim_drft_time
     }
 
-# Fungsi untuk memproses tugas klaim harian
+# Fungsi untuk memproses tugas
 def process_task(token, cookie, task_id):
     url = f"https://drftparty.fibrum.com/set-task?task_id={task_id}"
     headers = {
@@ -121,7 +121,6 @@ def process_task(token, cookie, task_id):
     
     response = requests.get(url, headers=headers)
     response_text = response.text
-    
 
     # Cari informasi claimedDRFT dari respon
     claimed_drft = re.search(r'"claimedDRFT":"(\d+)"', response_text)
@@ -129,6 +128,11 @@ def process_task(token, cookie, task_id):
         print(f"Jumlah DRFT yang didapat: {claimed_drft.group(1)}")
     else:
         print("Data claimedDRFT tidak ditemukan.")
+
+    if response.status_code == 200:
+        print("Tugas berhasil diambil hari ini.")
+    else:
+        print(f"Tugas gagal atau sudah diambil hari ini. Status kode: {response.status_code}")
 
     return response.status_code
 
@@ -156,8 +160,8 @@ def main():
             current_time = datetime.now()
             if account_info["last_claim_task_time"]:
                 next_check_in_time = account_info["last_claim_task_time"] + timedelta(days=1)
-                if current_time > next_check_in_time:
-                    print("Memproses tugas cek in harian.")
+                if current_time >= next_check_in_time:
+                    print("Waktunya cek in harian.")
                     check_in_task_id = 101 + account_info["total_daily_claims"]
                     if check_in_task_id > 112:
                         check_in_task_id = 112  # Maksimal task_id untuk cek in
