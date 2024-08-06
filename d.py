@@ -28,7 +28,7 @@ def login_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game",
+        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -53,7 +53,7 @@ def info_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game",
+        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -65,29 +65,7 @@ def info_account(token, cookie):
     }
     
     response = requests.get(url, headers=headers)
-    response_content = response.content
-    
-    # Coba dekompresi menggunakan berbagai metode
-    try:
-        decoded_content = zlib.decompress(response_content, zlib.MAX_WBITS | 16)
-        print(f"Decompressed Gzip: {decoded_content}")
-    except:
-        try:
-            decoded_content = zlib.decompress(response_content)
-            print(f"Decompressed Deflate: {decoded_content}")
-        except:
-            try:
-                decoded_content = brotli.decompress(response_content)
-                print(f"Decompressed Brotli: {decoded_content}")
-            except:
-                try:
-                    decoded_content = base64.b64decode(response_content)
-                    print(f"Decoded Base64: {decoded_content}")
-                except:
-                    decoded_content = response_content
-                    print("Dekode dan dekompresi gagal, menggunakan konten asli.")
-    
-    response_text = decoded_content.decode('utf-8', errors='ignore')
+    response_text = response.text
     print(f"Respons: {response_text}")
     
     # Cari informasi akun menggunakan regex
