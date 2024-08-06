@@ -1,7 +1,7 @@
 import time
 import requests
 from datetime import datetime, timedelta
-import json
+import re
 
 # Fungsi untuk membaca data dari file
 def read_data(filename):
@@ -25,7 +25,7 @@ def login_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
+        "Referer": "https://drftparty.fibrum.com/game",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -50,7 +50,7 @@ def info_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
+        "Referer": "https://drftparty.fibrum.com/game",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -63,16 +63,20 @@ def info_account(token, cookie):
     
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        try:
-            data = json.loads(response.text)
-            print(f"Respons JSON: {data}")
-            print(f"Informasi Akun:")
-            print(f"Username: {data.get('user_nick', 'N/A')}")
-            print(f"Total DRFT Claims: {data.get('total_drft_claims', 'N/A')}")
-            print(f"Total Daily Claims: {data.get('total_daily_claims', 'N/A')}")
-            print(f"DRFT: {data.get('drft', 'N/A')}")
-        except json.JSONDecodeError:
-            print("Respons tidak berisi JSON yang valid.")
+        response_text = response.text
+        print(f"Respons: {response_text}")
+        
+        # Cari informasi akun menggunakan regex
+        user_nick = re.search(r'"user_nick":"(.*?)"', response_text)
+        total_drft_claims = re.search(r'"total_drft_claims":(\d+)', response_text)
+        total_daily_claims = re.search(r'"total_daily_claims":(\d+)', response_text)
+        drft = re.search(r'"drft":"(.*?)"', response_text)
+
+        print("Informasi Akun:")
+        print(f"Username: {user_nick.group(1) if user_nick else 'N/A'}")
+        print(f"Total DRFT Claims: {total_drft_claims.group(1) if total_drft_claims else 'N/A'}")
+        print(f"Total Daily Claims: {total_daily_claims.group(1) if total_daily_claims else 'N/A'}")
+        print(f"DRFT: {drft.group(1) if drft else 'N/A'}")
     else:
         print(f"Gagal mendapatkan informasi akun. Status kode: {response.status_code}")
 
