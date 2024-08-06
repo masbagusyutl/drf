@@ -28,7 +28,7 @@ def login_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
+        "Referer": "https://drftparty.fibrum.com/game",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -53,7 +53,7 @@ def info_account(token, cookie):
         "Cookie": cookie,
         "Pragma": "no-cache",
         "Priority": "u=1, i",
-        "Referer": "https://drftparty.fibrum.com/game?tgWebAppStartParam=1039578077",
+        "Referer": "https://drftparty.fibrum.com/game",
         "Sec-Ch-Ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Microsoft Edge\";v=\"126\", \"Microsoft Edge WebView2\";v=\"126\"",
         "Sec-Ch-Ua-Mobile": "?0",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -66,7 +66,7 @@ def info_account(token, cookie):
     
     response = requests.get(url, headers=headers)
     response_text = response.text
-    print(f"Respons: {response_text}")
+    
     
     # Cari informasi akun menggunakan regex
     user_nick = re.search(r'"user_nick":"(.*?)"', response_text)
