@@ -71,8 +71,8 @@ def info_account(token, cookie):
     total_daily_claims = re.search(r'"total_daily_claims":(\d+)', response_text)
     drft = re.search(r'"drft":"(.*?)"', response_text)
     last_claimed_task_id = re.search(r'"last_claimed_task_id":(\d+)', response_text)
-    last_claim_task_time = re.search(r'"last_claim_task_time":"(.*?)"', response_text)
-    last_claim_drft_time = re.search(r'"last_claim_drft_time":"(.*?)"', response_text)
+    last_claim_task_time = re.search(r'"last_claim_task_time":"(\d+)"', response_text)
+    last_claim_drft_time = re.search(r'"last_claim_drft_time":"(\d+)"', response_text)
 
     print("Informasi Akun:")
     print(f"Username: {user_nick.group(1) if user_nick else 'N/A'}")
@@ -80,17 +80,25 @@ def info_account(token, cookie):
     print(f"Total Daily Claims: {total_daily_claims.group(1) if total_daily_claims else 'N/A'}")
     print(f"DRFT: {drft.group(1) if drft else 'N/A'}")
     print(f"Last Claimed Task ID: {last_claimed_task_id.group(1) if last_claimed_task_id else 'N/A'}")
-    print(f"Last Claim Task Time: {last_claim_task_time.group(1) if last_claim_task_time else 'N/A'}")
-    print(f"Last Claim DRFT Time: {last_claim_drft_time.group(1) if last_claim_drft_time else 'N/A'}")
+
+    # Konversi Unix timestamp ke datetime
+    def unix_to_datetime(timestamp):
+        return datetime.utcfromtimestamp(int(timestamp))
+
+    last_claim_task_time = unix_to_datetime(last_claim_task_time.group(1)) if last_claim_task_time else None
+    last_claim_drft_time = unix_to_datetime(last_claim_drft_time.group(1)) if last_claim_drft_time else None
+
+    print(f"Last Claim Task Time: {last_claim_task_time if last_claim_task_time else 'N/A'}")
+    print(f"Last Claim DRFT Time: {last_claim_drft_time if last_claim_drft_time else 'N/A'}")
 
     return {
         "total_daily_claims": int(total_daily_claims.group(1)) if total_daily_claims else 0,
         "last_claimed_task_id": int(last_claimed_task_id.group(1)) if last_claimed_task_id else 0,
-        "last_claim_task_time": last_claim_task_time.group(1) if last_claim_task_time else None,
-        "last_claim_drft_time": last_claim_drft_time.group(1) if last_claim_drft_time else None
+        "last_claim_task_time": last_claim_task_time,
+        "last_claim_drft_time": last_claim_drft_time
     }
 
-# Fungsi untuk memproses tugas klaim hadiah harian
+# Fungsi untuk memproses tugas klaim harian
 def process_task(token, cookie, task_id):
     url = f"https://drftparty.fibrum.com/set-task?task_id={task_id}"
     headers = {
@@ -138,8 +146,8 @@ def main():
             # Proses cek in harian
             current_time = datetime.now()
             if account_info["last_claim_task_time"]:
-                last_claim_task_time = datetime.strptime(account_info["last_claim_task_time"], "%Y-%m-%d %H:%M:%S")
-                if current_time > last_claim_task_time + timedelta(days=1):
+                next_check_in_time = account_info["last_claim_task_time"] + timedelta(days=1)
+                if current_time > next_check_in_time:
                     print("Memproses cek in harian.")
                     status_code = process_task(token, cookie, 101)
                     print(f"Status kode cek in harian: {status_code}")
