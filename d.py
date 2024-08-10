@@ -16,7 +16,7 @@ def read_data(filename):
 
 # Fungsi untuk login akun
 def login_account(token, cookie):
-    url = "https://drftparty.fibrum.com/auth"
+    url = "https://drftparty.fibrum.com/api/auth"
     headers = {
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br, zstd",
@@ -41,7 +41,7 @@ def login_account(token, cookie):
 
 # Fungsi untuk mendapatkan informasi akun
 def info_account(token, cookie):
-    url = "https://drftparty.fibrum.com/get-user"
+    url = "https://drftparty.fibrum.com/api/get-user"
     headers = {
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br, zstd",
@@ -99,7 +99,7 @@ def info_account(token, cookie):
 
 # Fungsi untuk memproses tugas
 def process_task(token, cookie, task_id):
-    url = f"https://drftparty.fibrum.com/set-task?task_id={task_id}"
+    url = f"https://drftparty.fibrum.com/api/set-task?task_id={task_id}"
     headers = {
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br, zstd",
