@@ -122,12 +122,8 @@ def process_task(token, cookie, task_id):
     response = requests.get(url, headers=headers)
     response_text = response.text
 
-    # Cari informasi claimedDRFT dari respon
-    claimed_drft = re.search(r'"claimedDRFT":"(\d+)"', response_text)
-    if claimed_drft:
-        print(f"Jumlah DRFT yang didapat: {response_text}")
-    else:
-        print("Data claimedDRFT tidak ditemukan.")
+    # Langsung cetak respon dari server
+    print(f"Respon server: {response_text}")
 
     if response.status_code == 200:
         print("Tugas berhasil diambil hari ini.")
