@@ -125,7 +125,7 @@ def process_task(token, cookie, task_id):
     # Cari informasi claimedDRFT dari respon
     claimed_drft = re.search(r'"claimedDRFT":"(\d+)"', response_text)
     if claimed_drft:
-        print(f"Jumlah DRFT yang didapat: {claimed_drft.group(1)}")
+        print(f"Jumlah DRFT yang didapat: {response_text}")
     else:
         print("Data claimedDRFT tidak ditemukan.")
 
